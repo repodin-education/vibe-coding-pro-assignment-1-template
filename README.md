@@ -1,300 +1,829 @@
-# Vibe Coding: Pro-Level Bonus Assignments
+# Pro Assignment 1: Authentication System
 
-## 📚 Overview
+## Learning Objectives
 
-Pro-level assignments are **optional bonus work** for students who want to go further and build production-ready
-features.
+By completing this assignment, you will:
 
-**Total Bonus Points Available:** 50 points (5 assignments × 10 points each)
-
-These assignments extend your Hello World app (from Assignment 2) with advanced, real-world features.
-
----
-
-## 🎯 All Pro Assignments
-
-| Assignment | Topic | Points | Difficulty |
-|------------|-------|--------|------------|
-| Pro 1 | Authentication System | 10 | ⭐⭐⭐ |
-| Pro 2 | Real-Time Features (WebSockets) | 10 | ⭐⭐⭐⭐ |
-| Pro 3 | Database Integration | 10 | ⭐⭐⭐ |
-| Pro 4 | Production Deployment | 10 | ⭐⭐ |
-| Pro 5 | Comprehensive Testing Suite | 10 | ⭐⭐⭐⭐ |
+- Understand authentication and authorization concepts
+- Learn to implement secure user registration and login
+- Practice password hashing and security best practices
+- Implement JWT tokens or session management
+- Create protected routes and endpoints
+- Understand middleware for authentication
+- Gain experience with authentication libraries (bcrypt, jsonwebtoken, Flask-Login, jne.)
 
 ---
 
-## 🔐 Pro Assignment 1: Authentication System
+## Prerequisites
 
-**Points:** 10 bonus points
-**Difficulty:** ⭐⭐⭐
+- Completed at least Assignment 2 (E2E Hello World)
+- Working server and client application
+- Understanding of your chosen stack (Node.js or Python)
+- Cursor AI installed and configured
+- Basic understanding of HTTP requests and responses
+- (Optional) Basic understanding of databases (for storing users)
 
-### Goal
+---
 
-Add user authentication to your application.
+## Overview
 
-### Requirements
+This is a **pro-level bonus assignment** worth **10 bonus points**. It's optional but highly recommended for students who want to learn security and user management.
 
+**Goal:** Add user authentication to your application, enabling users to register, login, and access protected features.
+
+**Features:**
 - User registration (sign up)
 - User login
 - Session management
 - Protected routes/endpoints
 - Logout functionality
-
-### Technical Requirements
-
-- Secure password storage (hashing with bcrypt or similar)
-- JWT tokens or session cookies
-- Authentication middleware
-- User database/storage
-
-### Deliverables
-
-- ✅ Working authentication system
-- ✅ Documentation in README.md
-- ✅ Security considerations documented
-- ✅ Example users for testing
+- Password security
 
 ---
 
-## 🔄 Pro Assignment 2: Real-Time Features (WebSockets)
+## Instructions
 
-**Points:** 10 bonus points
-**Difficulty:** ⭐⭐⭐⭐
+### Step 1: Choose Your Authentication Approach
 
-### Goal
+Select an authentication method based on your stack:
 
-Add real-time functionality using WebSockets.
+**For Node.js:**
+- **JWT (JSON Web Tokens)** (recommended) - Stateless, scalable
+- **Session cookies** - Traditional, stateful
+- **Passport.js** - Authentication middleware
 
-### Requirements
+**For Python:**
+- **Flask-Login** (recommended) - Easy Flask integration
+- **JWT with PyJWT** - Stateless tokens
+- **Flask-Session** - Session management
 
-- WebSocket server setup
-- Real-time message updates
-- Client WebSocket connection
-- Live updates without page refresh
+**Recommendation:** Start with **JWT** (Node.js) or **Flask-Login** (Python) - they're the most common approaches.
 
-### Technical Requirements
+### Step 2: Install Authentication Dependencies
 
-- WebSocket library (Socket.io for Node.js, Flask-SocketIO for Python)
-- Server WebSocket endpoint
-- Client WebSocket connection
-- Real-time event handling
+1. **Install authentication libraries:**
 
-### Deliverables
+   **Node.js (JWT + bcrypt):**
 
-- ✅ Working real-time features
-- ✅ Documentation in README.md
-- ✅ Example use case demonstrated
-- ✅ Screenshot/video of real-time updates
+   ```bash
+   npm install jsonwebtoken bcrypt
+   npm install --save-dev @types/jsonwebtoken @types/bcrypt
+   ```
+
+   **Node.js (Passport.js):**
+
+   ```bash
+   npm install passport passport-local passport-jwt
+   ```
+
+   **Python (Flask-Login + bcrypt):**
+
+   ```bash
+   pip install flask-login bcrypt
+   ```
+
+   **Python (JWT + bcrypt):**
+
+   ```bash
+   pip install pyjwt bcrypt
+   ```
+
+2. **Update package files:**
+
+   **Node.js (package.json):**
+
+   ```json
+   {
+     "dependencies": {
+       "jsonwebtoken": "^9.0.2",
+       "bcrypt": "^5.1.1"
+     }
+   }
+   ```
+
+   **Python (requirements.txt):**
+
+   ```txt
+   flask-login==0.6.3
+   bcrypt==4.1.2
+   ```
+
+### Step 3: Set Up User Storage
+
+1. **Choose storage method:**
+
+   - **In-memory** (for learning) - Simple, no database needed
+   - **SQLite** (recommended) - File-based, easy setup
+   - **PostgreSQL/MongoDB** - Production-ready
+
+2. **Create user schema:**
+
+   **SQLite (Node.js):**
+
+   ```javascript
+   // server/db.js
+   const Database = require('better-sqlite3')
+   const db = new Database('app.db')
+
+   db.exec(`
+     CREATE TABLE IF NOT EXISTS users (
+       id INTEGER PRIMARY KEY AUTOINCREMENT,
+       username TEXT UNIQUE NOT NULL,
+       email TEXT UNIQUE NOT NULL,
+       password_hash TEXT NOT NULL,
+       created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+     )
+   `)
+
+   module.exports = db
+   ```
+
+   **SQLite (Python):**
+
+   ```python
+   # server/db.py
+   import sqlite3
+
+   def init_db():
+       conn = sqlite3.connect('app.db')
+       conn.execute('''
+           CREATE TABLE IF NOT EXISTS users (
+               id INTEGER PRIMARY KEY AUTOINCREMENT,
+               username TEXT UNIQUE NOT NULL,
+               email TEXT UNIQUE NOT NULL,
+               password_hash TEXT NOT NULL,
+               created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+           )
+       ''')
+       conn.commit()
+       conn.close()
+   ```
+
+### Step 4: Implement Password Hashing
+
+1. **Hash passwords on registration:**
+
+   **Node.js (bcrypt):**
+
+   ```javascript
+   // server/auth.js
+   const bcrypt = require('bcrypt')
+
+   async function hashPassword(password) {
+     const saltRounds = 10
+     return await bcrypt.hash(password, saltRounds)
+   }
+
+   async function comparePassword(password, hash) {
+     return await bcrypt.compare(password, hash)
+   }
+
+   module.exports = { hashPassword, comparePassword }
+   ```
+
+   **Python (bcrypt):**
+
+   ```python
+   # server/auth.py
+   import bcrypt
+
+   def hash_password(password):
+       salt = bcrypt.gensalt()
+       return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
+
+   def check_password(password, hash):
+       return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
+   ```
+
+### Step 5: Implement User Registration
+
+1. **Create registration endpoint:**
+
+   **Node.js:**
+
+   ```javascript
+   // server/index.js
+   const express = require('express')
+   const { hashPassword } = require('./auth')
+   const db = require('./db')
+
+   const app = express()
+   app.use(express.json())
+
+   app.post('/api/auth/register', async (req, res) => {
+     try {
+       const { username, email, password } = req.body
+
+       // Validate input
+       if (!username || !email || !password) {
+         return res.status(400).json({ error: 'All fields required' })
+       }
+
+       if (password.length < 8) {
+         return res.status(400).json({ error: 'Password must be at least 8 characters' })
+       }
+
+       // Check if user exists
+       const existingUser = db.prepare('SELECT * FROM users WHERE email = ?').get(email)
+       if (existingUser) {
+         return res.status(400).json({ error: 'User already exists' })
+       }
+
+       // Hash password
+       const passwordHash = await hashPassword(password)
+
+       // Create user
+       const stmt = db.prepare('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)')
+       const result = stmt.run(username, email, passwordHash)
+
+       res.status(201).json({
+         success: true,
+         message: 'User registered successfully',
+         userId: result.lastInsertRowid,
+       })
+     } catch (error) {
+       console.error('Registration error:', error)
+       res.status(500).json({ error: 'Registration failed' })
+     }
+   })
+   ```
+
+   **Python:**
+
+   ```python
+   # server/app.py
+   from flask import Flask, request, jsonify
+   from db import get_db
+   from auth import hash_password
+
+   app = Flask(__name__)
+
+   @app.route('/api/auth/register', methods=['POST'])
+   def register():
+       data = request.get_json()
+       username = data.get('username')
+       email = data.get('email')
+       password = data.get('password')
+
+       # Validate input
+       if not username or not email or not password:
+           return jsonify({'error': 'All fields required'}), 400
+
+       if len(password) < 8:
+           return jsonify({'error': 'Password must be at least 8 characters'}), 400
+
+       # Check if user exists
+       conn = get_db()
+       existing = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+       if existing:
+           return jsonify({'error': 'User already exists'}), 400
+
+       # Hash password
+       password_hash = hash_password(password)
+
+       # Create user
+       cursor = conn.execute(
+           'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
+           (username, email, password_hash)
+       )
+       conn.commit()
+       user_id = cursor.lastinsertrowid
+       conn.close()
+
+       return jsonify({
+           'success': True,
+           'message': 'User registered successfully',
+           'userId': user_id
+       }), 201
+   ```
+
+### Step 6: Implement User Login
+
+1. **Create login endpoint:**
+
+   **Node.js (JWT):**
+
+   ```javascript
+   // server/index.js
+   const jwt = require('jsonwebtoken')
+   const { comparePassword } = require('./auth')
+
+   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+
+   app.post('/api/auth/login', async (req, res) => {
+     try {
+       const { email, password } = req.body
+
+       // Validate input
+       if (!email || !password) {
+         return res.status(400).json({ error: 'Email and password required' })
+       }
+
+       // Find user
+       const user = db.prepare('SELECT * FROM users WHERE email = ?').get(email)
+       if (!user) {
+         return res.status(401).json({ error: 'Invalid credentials' })
+       }
+
+       // Verify password
+       const isValid = await comparePassword(password, user.password_hash)
+       if (!isValid) {
+         return res.status(401).json({ error: 'Invalid credentials' })
+       }
+
+       // Generate JWT token
+       const token = jwt.sign(
+         { userId: user.id, email: user.email },
+         JWT_SECRET,
+         { expiresIn: '24h' }
+       )
+
+       res.json({
+         success: true,
+         token,
+         user: {
+           id: user.id,
+           username: user.username,
+           email: user.email,
+         },
+       })
+     } catch (error) {
+       console.error('Login error:', error)
+       res.status(500).json({ error: 'Login failed' })
+     }
+   })
+   ```
+
+   **Python (Flask-Login):**
+
+   ```python
+   # server/app.py
+   from flask_login import LoginManager, login_user, UserMixin
+   from auth import check_password
+
+   app = Flask(__name__)
+   app.secret_key = 'your-secret-key-change-in-production'
+
+   login_manager = LoginManager()
+   login_manager.init_app(app)
+
+   class User(UserMixin):
+       def __init__(self, id, username, email):
+           self.id = id
+           self.username = username
+           self.email = email
+
+   @login_manager.user_loader
+   def load_user(user_id):
+       conn = get_db()
+       user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
+       conn.close()
+       if user:
+           return User(user['id'], user['username'], user['email'])
+       return None
+
+   @app.route('/api/auth/login', methods=['POST'])
+   def login():
+       data = request.get_json()
+       email = data.get('email')
+       password = data.get('password')
+
+       if not email or not password:
+           return jsonify({'error': 'Email and password required'}), 400
+
+       conn = get_db()
+       user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
+       conn.close()
+
+       if not user or not check_password(password, user['password_hash']):
+           return jsonify({'error': 'Invalid credentials'}), 401
+
+       user_obj = User(user['id'], user['username'], user['email'])
+       login_user(user_obj)
+
+       return jsonify({
+           'success': True,
+           'message': 'Logged in successfully',
+           'user': {
+               'id': user['id'],
+               'username': user['username'],
+               'email': user['email']
+           }
+       })
+   ```
+
+### Step 7: Create Authentication Middleware
+
+1. **Protect routes with middleware:**
+
+   **Node.js (JWT middleware):**
+
+   ```javascript
+   // server/middleware/auth.js
+   const jwt = require('jsonwebtoken')
+
+   const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+
+   function authenticateToken(req, res, next) {
+     const authHeader = req.headers['authorization']
+     const token = authHeader && authHeader.split(' ')[1] // Bearer TOKEN
+
+     if (!token) {
+       return res.status(401).json({ error: 'Access token required' })
+     }
+
+     jwt.verify(token, JWT_SECRET, (err, user) => {
+       if (err) {
+         return res.status(403).json({ error: 'Invalid or expired token' })
+       }
+       req.user = user
+       next()
+     })
+   }
+
+   module.exports = { authenticateToken }
+   ```
+
+   **Use middleware:**
+
+   ```javascript
+   // server/index.js
+   const { authenticateToken } = require('./middleware/auth')
+
+   // Protected route
+   app.get('/api/profile', authenticateToken, (req, res) => {
+     res.json({
+       message: 'Protected route accessed',
+       user: req.user,
+     })
+   })
+   ```
+
+   **Python (Flask-Login decorator):**
+
+   ```python
+   # server/app.py
+   from flask_login import login_required
+
+   @app.route('/api/profile')
+   @login_required
+   def profile():
+       return jsonify({
+           'message': 'Protected route accessed',
+           'user': {
+               'id': current_user.id,
+               'username': current_user.username,
+               'email': current_user.email
+           }
+       })
+   ```
+
+### Step 8: Implement Logout
+
+1. **Create logout endpoint:**
+
+   **Node.js (JWT - client-side):**
+
+   ```javascript
+   // Client-side: Simply remove token
+   function logout() {
+     localStorage.removeItem('token')
+     window.location.href = '/login'
+   }
+   ```
+
+   **Python (Flask-Login):**
+
+   ```python
+   # server/app.py
+   from flask_login import logout_user
+
+   @app.route('/api/auth/logout', methods=['POST'])
+   @login_required
+   def logout():
+       logout_user()
+       return jsonify({'success': True, 'message': 'Logged out successfully'})
+   ```
+
+### Step 9: Update Client to Use Authentication
+
+1. **Create login form:**
+
+   ```html
+   <!-- client/login.html -->
+   <!DOCTYPE html>
+   <html>
+     <head>
+       <title>Login</title>
+     </head>
+     <body>
+       <h1>Login</h1>
+       <form id="loginForm">
+         <input type="email" id="email" placeholder="Email" required />
+         <input type="password" id="password" placeholder="Password" required />
+         <button type="submit">Login</button>
+       </form>
+       <div id="error"></div>
+
+       <script>
+         document.getElementById('loginForm').addEventListener('submit', async e => {
+           e.preventDefault()
+
+           const email = document.getElementById('email').value
+           const password = document.getElementById('password').value
+
+           try {
+             const response = await fetch('/api/auth/login', {
+               method: 'POST',
+               headers: { 'Content-Type': 'application/json' },
+               body: JSON.stringify({ email, password }),
+             })
+
+             const data = await response.json()
+
+             if (response.ok) {
+               // Store token
+               localStorage.setItem('token', data.token)
+               window.location.href = '/dashboard'
+             } else {
+               document.getElementById('error').textContent = data.error
+             }
+           } catch (error) {
+             console.error('Login error:', error)
+           }
+         })
+       </script>
+     </body>
+   </html>
+   ```
+
+2. **Add token to requests:**
+
+   ```javascript
+   // client/api.js
+   function getAuthHeaders() {
+     const token = localStorage.getItem('token')
+     return {
+       'Content-Type': 'application/json',
+       Authorization: `Bearer ${token}`,
+     }
+   }
+
+   async function fetchProfile() {
+     const response = await fetch('/api/profile', {
+       headers: getAuthHeaders(),
+     })
+     return await response.json()
+   }
+   ```
+
+### Step 10: Document Your Authentication System
+
+1. **Update README.md:**
+
+   - Add "Authentication" section
+   - Document registration and login endpoints
+   - Explain JWT token usage
+   - Include security considerations
+   - Document protected routes
+
+2. **Create authentication documentation:**
+
+   ```markdown
+   ## Authentication System
+
+   ### Endpoints
+
+   - `POST /api/auth/register` - Register new user
+   - `POST /api/auth/login` - Login user
+   - `POST /api/auth/logout` - Logout user
+   - `GET /api/profile` - Get user profile (protected)
+
+   ### Security
+
+   - Passwords are hashed using bcrypt
+   - JWT tokens expire after 24 hours
+   - Protected routes require valid token
+   ```
 
 ---
 
-## 💾 Pro Assignment 3: Database Integration
+## Requirements
 
-**Points:** 10 bonus points
-**Difficulty:** ⭐⭐⭐
+### Required
 
-### Goal
+- [ ] User registration (sign up) working
+- [ ] User login working
+- [ ] Password hashing implemented (bcrypt)
+- [ ] JWT tokens or session management working
+- [ ] Authentication middleware created
+- [ ] At least one protected route/endpoint
+- [ ] Logout functionality
+- [ ] Authentication documented in README.md
 
-Add database integration to store and retrieve data.
+### Optional
 
-### Requirements
-
-- Database setup (SQLite, PostgreSQL, or MongoDB)
-- Database schema/models
-- CRUD operations (Create, Read, Update, Delete)
-- Data persistence
-
-### Technical Requirements
-
-- Database connection
-- ORM or query builder
-- Migration system (optional but recommended)
-- Data validation
-
-### Deliverables
-
-- ✅ Working database integration
-- ✅ Database schema documented
-- ✅ Example queries demonstrated
-- ✅ Sample data included
+- [ ] Email validation
+- [ ] Password strength requirements
+- [ ] Remember me functionality
+- [ ] Password reset
+- [ ] Email verification
+- [ ] Rate limiting on auth endpoints
+- [ ] Account lockout after failed attempts
 
 ---
 
-## 🚀 Pro Assignment 4: Production Deployment
+## Acceptance Criteria
 
-**Points:** 10 bonus points
-**Difficulty:** ⭐⭐
+Your submission will be evaluated based on:
 
-### Goal
-
-Deploy your application to a production environment.
-
-### Requirements
-
-- Deployed to production (Vercel, Railway, Heroku, Render, etc.)
-- Environment variables configured
-- Production-ready configuration
-- Live URL accessible
-
-### Technical Requirements
-
-- Deployment platform account
-- Environment variables setup
-- Production build configuration
-- Domain/URL configuration
-
-### Deliverables
-
-- ✅ Live deployed application
-- ✅ Deployment documentation
-- ✅ Production URL shared
-- ✅ Environment setup guide
+- [ ] User registration working
+- [ ] User login working
+- [ ] Passwords securely hashed
+- [ ] JWT tokens or sessions working
+- [ ] Protected routes require authentication
+- [ ] Logout functionality working
+- [ ] Authentication system documented
+- [ ] Security considerations documented
+- [ ] Changes committed and pushed to GitHub
 
 ---
 
-## ✅ Pro Assignment 5: Comprehensive Testing Suite
+## Submission Requirements
 
-**Points:** 10 bonus points
-**Difficulty:** ⭐⭐⭐⭐
+1. **Authentication code:** All auth code in server
+2. **Database:** User storage set up (SQLite or in-memory)
+3. **Documentation:** README.md updated with authentication section
+4. **Security notes:** Security considerations documented
+5. **Commit:** All changes committed and pushed to GitHub
 
-### Goal
+**Commit message example:**
 
-Add comprehensive testing to your application.
-
-### Requirements
-
-- Unit tests for server endpoints
-- Integration tests for API
-- Client-side tests (optional)
-- Test coverage report
-
-### Technical Requirements
-
-- Testing framework (Jest for Node.js, pytest for Python)
-- Test files organized
-- Test coverage > 80%
-- CI/CD integration (optional but recommended)
-
-### Deliverables
-
-- ✅ Complete test suite
-- ✅ Test coverage report
-- ✅ Testing documentation
-- ✅ Instructions to run tests
+```bash
+git commit -m "Pro Assignment 1: Authentication System"
+```
 
 ---
 
-## 📝 Submission Guidelines
+## Grading Rubric
 
-### For Each Pro Assignment
+See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
 
-1. **Implement the feature:**
- - Complete all requirements
- - Test thoroughly
- - Document in README.md
+**Total Points:** 10 bonus points
 
-2. **Documentation:**
- - Feature description
- - How to use
- - Technical details
- - Screenshots/demos
-
-3. **Commit and push:**
- ```bash
- git add .
- git commit -m "Pro Assignment [number]: [feature name]"
- git push
-
-Grading
-
-Each pro assignment is graded on:
-
-- Functionality (5 points): Works as described, all requirements met
-- Code Quality (3 points): Clean, readable, well-organized code
-- Documentation (2 points): Complete README with examples
-
-Total: Up to 50 bonus points (10 points × 5 assignments)
+- **Registration & Login:** 4 points
+  - Registration working: 1 point
+  - Login working: 1 point
+  - Password hashing: 1 point
+  - Input validation: 1 point
+- **Authentication:** 3 points
+  - JWT/session working: 1 point
+  - Protected routes: 1 point
+  - Middleware: 1 point
+- **Security:** 2 points
+  - Password security: 1 point
+  - Token security: 1 point
+- **Documentation:** 1 point
+  - Authentication documented: 0.5 points
+  - Security considerations: 0.5 points
 
 ---
-💡 Tips for Success
 
-- Start simple: Get basic functionality working first
-- Use Cursor AI: Generate code, then understand and modify
-- Test thoroughly: Make sure everything works before submitting
-- Document well: Documentation is part of the grade
-- Ask for help: Pro assignments are challenging, help is available
-- Build incrementally: Do Pro 1, 3, 4 before attempting 2 or 5
+## Security Best Practices
+
+### Password Security
+
+- ✅ **Always hash passwords** - Never store plain text passwords
+- ✅ **Use bcrypt** - Industry standard for password hashing
+- ✅ **Salt rounds** - Use at least 10 salt rounds
+- ✅ **Password requirements** - Minimum 8 characters, complexity rules
+- ❌ **Never log passwords** - Don't log password in any form
+- ❌ **Never send passwords** - Don't send passwords in error messages
+
+### Token Security
+
+- ✅ **Use HTTPS** - Always use HTTPS in production
+- ✅ **Token expiration** - Set reasonable expiration times (24h)
+- ✅ **Secret key** - Use strong, random secret keys
+- ✅ **Store securely** - Store tokens securely (httpOnly cookies or localStorage)
+- ❌ **Don't expose secrets** - Never commit secret keys to Git
+
+### General Security
+
+- ✅ **Input validation** - Validate all user input
+- ✅ **Rate limiting** - Limit login attempts
+- ✅ **Error messages** - Don't reveal if user exists
+- ✅ **CORS** - Configure CORS properly
+- ✅ **SQL injection** - Use parameterized queries
 
 ---
-🎓 Recommended Order
 
-1. Start with Pro 4 (Deployment) - Easiest, good confidence builder
-2. Then Pro 3 (Database) - Foundation for other features
-3. Then Pro 1 (Authentication) - Builds on database
-4. Then Pro 5 (Testing) - Learn to test what you've built
-5. Finally Pro 2 (WebSockets) - Most advanced
+## Tips for Success
+
+- **Start with JWT/Flask-Login:** Easiest to implement
+- **Use bcrypt:** Industry standard for password hashing
+- **Test thoroughly:** Test registration, login, logout, protected routes
+- **Handle errors:** Provide clear error messages
+- **Use Cursor AI:** Ask Cursor to generate authentication code
+- **Keep it simple:** Start with basic auth, add features later
+- **Document as you go:** Write down what you learn
 
 ---
-🆘 Getting Help
+
+## Example Authentication Flow
+
+```
+1. User Registration:
+   User → POST /api/auth/register → Hash password → Store user → Success
+
+2. User Login:
+   User → POST /api/auth/login → Verify password → Generate JWT → Return token
+
+3. Access Protected Route:
+   User → GET /api/profile (with token) → Verify token → Return data
+
+4. User Logout:
+   User → POST /api/auth/logout → Remove token → Success
+```
+
+---
+
+## Common Authentication Issues
+
+### Issue: Password not hashing
+
+**Solutions:**
+
+- Check bcrypt installation
+- Verify async/await usage
+- Check salt rounds
+
+### Issue: Token not working
+
+**Solutions:**
+
+- Verify JWT_SECRET matches
+- Check token expiration
+- Verify token format (Bearer TOKEN)
+- Check token in request headers
+
+### Issue: Protected route not working
+
+**Solutions:**
+
+- Verify middleware is applied
+- Check token is sent in request
+- Verify token is valid
+- Check middleware order
+
+### Issue: User not found on login
+
+**Solutions:**
+
+- Check database connection
+- Verify email exists
+- Check password comparison
+- Verify user was created
+
+---
+
+## Getting Help
 
 - Ask questions in the help channel
-- Review documentation for technologies used
-- Check ../../docs/education/vibe-coding-faq.md
+- Review authentication documentation:
+  - [JWT.io](https://jwt.io/) - JWT token debugger
+  - [bcrypt Documentation](https://www.npmjs.com/package/bcrypt)
+  - [Flask-Login Documentation](https://flask-login.readthedocs.io/)
+- Check [FAQ](../materials/faq.md)
+- Review [Student Guide](../materials/student-guide.md)
 - Contact your teacher if needed
-- Review example projects (if provided)
 
 ---
-📚 Recommended Resources
 
-Authentication
+## Resources
 
-- JWT.io - Learn about JSON Web Tokens
-- bcrypt documentation
-- OWASP Authentication Cheat Sheet
+**Authentication Libraries:**
 
-WebSockets
+- [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) - Node.js JWT library
+- [bcrypt](https://www.npmjs.com/package/bcrypt) - Password hashing
+- [Flask-Login](https://flask-login.readthedocs.io/) - Python authentication
+- [Passport.js](http://www.passportjs.org/) - Node.js authentication middleware
 
-- Socket.io documentation
-- Flask-SocketIO documentation
-- MDN WebSocket API
+**Learning Resources:**
 
-Databases
-
-- SQLite Tutorial
-- PostgreSQL Documentation
-- Mongoose (MongoDB for Node.js)
-
-Deployment
-
-- Vercel Documentation
-- Railway Documentation
-- Heroku Dev Center
-
-Testing
-
-- Jest Documentation
-- pytest Documentation
-- Testing Best Practices
+- [JWT Authentication Tutorial](https://jwt.io/introduction)
+- [Password Hashing Best Practices](https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html)
+- [Authentication vs Authorization](https://auth0.com/blog/authentication-vs-authorization/)
 
 ---
-🏆 Bonus Challenge
 
-Complete all 5 Pro assignments to earn:
-- ✨ 50 bonus points
-- 🎖️ "Pro Developer" badge
-- 📜 Special recognition in course completion
+## Document History
 
----
-Ready to level up? Start with Pro Assignment 4 (Deployment)!
-
-Good luck! 🚀
-
-5. **Vieritä alas** ja klikkaa **"Commit changes..."**
-
-6. **Commit message:** `Add Pro assignments instructions`
-
-7. **Klikkaa "Commit changes"**
-
-8. **Ota kuvakaappaus** kun commit on valmis
+| Version | Date       | Author                 | Changes         |
+| ------- | ---------- | ---------------------- | --------------- |
+| 1.0     | 2025-12-25 | RepodIn Education Team | Initial version |
 
 ---
+
+**Next Review Date:** 2026-03-20
+
