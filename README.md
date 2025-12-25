@@ -1,14 +1,5 @@
 # Vibe Coding: Pro-Level Bonus Assignments
 
-> **"RepodIn Education is a teacher-first management and analytics layer on top of GitHub Classroom."**
-
-**Document Version:** 1.0
-**Last Updated:** 2025-12-12
-**Status:** Production
-**Maintainer:** RepodIn Education Team
-
----
-
 ## 📚 Overview
 
 Pro-level assignments are **optional bonus work** for students who want to go further and build production-ready
