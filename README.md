@@ -10,7 +10,7 @@ By completing this assignment, you will:
 - Implement JWT tokens or session management
 - Create protected routes and endpoints
 - Understand middleware for authentication
-- Gain experience with authentication libraries (bcrypt, jsonwebtoken, Flask-Login, jne.)
+- Gain experience with authentication libraries (bcrypt, jsonwebtoken, jne.)
 
 ---
 
@@ -18,7 +18,7 @@ By completing this assignment, you will:
 
 - Completed at least Assignment 2 (E2E Hello World)
 - Working server and client application
-- Understanding of your chosen stack (Node.js or Python)
+- Understanding of Node.js + Express basics
 - Cursor AI installed and configured
 - Basic understanding of HTTP requests and responses
 - (Optional) Basic understanding of databases (for storing users)
@@ -32,6 +32,7 @@ This is a **pro-level bonus assignment** worth **10 bonus points**. It's optiona
 **Goal:** Add user authentication to your application, enabling users to register, login, and access protected features.
 
 **Features:**
+
 - User registration (sign up)
 - User login
 - Session management
@@ -45,19 +46,13 @@ This is a **pro-level bonus assignment** worth **10 bonus points**. It's optiona
 
 ### Step 1: Choose Your Authentication Approach
 
-Select an authentication method based on your stack:
+Select an authentication method:
 
-**For Node.js:**
 - **JWT (JSON Web Tokens)** (recommended) - Stateless, scalable
 - **Session cookies** - Traditional, stateful
 - **Passport.js** - Authentication middleware
 
-**For Python:**
-- **Flask-Login** (recommended) - Easy Flask integration
-- **JWT with PyJWT** - Stateless tokens
-- **Flask-Session** - Session management
-
-**Recommendation:** Start with **JWT** (Node.js) or **Flask-Login** (Python) - they're the most common approaches.
+**Recommendation:** Start with **JWT** - it's the most common approach for modern web apps.
 
 ### Step 2: Install Authentication Dependencies
 
@@ -76,21 +71,7 @@ Select an authentication method based on your stack:
    npm install passport passport-local passport-jwt
    ```
 
-   **Python (Flask-Login + bcrypt):**
-
-   ```bash
-   pip install flask-login bcrypt
-   ```
-
-   **Python (JWT + bcrypt):**
-
-   ```bash
-   pip install pyjwt bcrypt
-   ```
-
-2. **Update package files:**
-
-   **Node.js (package.json):**
+2. **Update package.json:**
 
    ```json
    {
@@ -99,13 +80,6 @@ Select an authentication method based on your stack:
        "bcrypt": "^5.1.1"
      }
    }
-   ```
-
-   **Python (requirements.txt):**
-
-   ```txt
-   flask-login==0.6.3
-   bcrypt==4.1.2
    ```
 
 ### Step 3: Set Up User Storage
@@ -138,27 +112,6 @@ Select an authentication method based on your stack:
    module.exports = db
    ```
 
-   **SQLite (Python):**
-
-   ```python
-   # server/db.py
-   import sqlite3
-
-   def init_db():
-       conn = sqlite3.connect('app.db')
-       conn.execute('''
-           CREATE TABLE IF NOT EXISTS users (
-               id INTEGER PRIMARY KEY AUTOINCREMENT,
-               username TEXT UNIQUE NOT NULL,
-               email TEXT UNIQUE NOT NULL,
-               password_hash TEXT NOT NULL,
-               created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-           )
-       ''')
-       conn.commit()
-       conn.close()
-   ```
-
 ### Step 4: Implement Password Hashing
 
 1. **Hash passwords on registration:**
@@ -179,20 +132,6 @@ Select an authentication method based on your stack:
    }
 
    module.exports = { hashPassword, comparePassword }
-   ```
-
-   **Python (bcrypt):**
-
-   ```python
-   # server/auth.py
-   import bcrypt
-
-   def hash_password(password):
-       salt = bcrypt.gensalt()
-       return bcrypt.hashpw(password.encode('utf-8'), salt).decode('utf-8')
-
-   def check_password(password, hash):
-       return bcrypt.checkpw(password.encode('utf-8'), hash.encode('utf-8'))
    ```
 
 ### Step 5: Implement User Registration
@@ -233,7 +172,9 @@ Select an authentication method based on your stack:
        const passwordHash = await hashPassword(password)
 
        // Create user
-       const stmt = db.prepare('INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)')
+       const stmt = db.prepare(
+         'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)'
+       )
        const result = stmt.run(username, email, passwordHash)
 
        res.status(201).json({
@@ -246,55 +187,6 @@ Select an authentication method based on your stack:
        res.status(500).json({ error: 'Registration failed' })
      }
    })
-   ```
-
-   **Python:**
-
-   ```python
-   # server/app.py
-   from flask import Flask, request, jsonify
-   from db import get_db
-   from auth import hash_password
-
-   app = Flask(__name__)
-
-   @app.route('/api/auth/register', methods=['POST'])
-   def register():
-       data = request.get_json()
-       username = data.get('username')
-       email = data.get('email')
-       password = data.get('password')
-
-       # Validate input
-       if not username or not email or not password:
-           return jsonify({'error': 'All fields required'}), 400
-
-       if len(password) < 8:
-           return jsonify({'error': 'Password must be at least 8 characters'}), 400
-
-       # Check if user exists
-       conn = get_db()
-       existing = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-       if existing:
-           return jsonify({'error': 'User already exists'}), 400
-
-       # Hash password
-       password_hash = hash_password(password)
-
-       # Create user
-       cursor = conn.execute(
-           'INSERT INTO users (username, email, password_hash) VALUES (?, ?, ?)',
-           (username, email, password_hash)
-       )
-       conn.commit()
-       user_id = cursor.lastinsertrowid
-       conn.close()
-
-       return jsonify({
-           'success': True,
-           'message': 'User registered successfully',
-           'userId': user_id
-       }), 201
    ```
 
 ### Step 6: Implement User Login
@@ -332,11 +224,9 @@ Select an authentication method based on your stack:
        }
 
        // Generate JWT token
-       const token = jwt.sign(
-         { userId: user.id, email: user.email },
-         JWT_SECRET,
-         { expiresIn: '24h' }
-       )
+       const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, {
+         expiresIn: '24h',
+       })
 
        res.json({
          success: true,
@@ -352,64 +242,6 @@ Select an authentication method based on your stack:
        res.status(500).json({ error: 'Login failed' })
      }
    })
-   ```
-
-   **Python (Flask-Login):**
-
-   ```python
-   # server/app.py
-   from flask_login import LoginManager, login_user, UserMixin
-   from auth import check_password
-
-   app = Flask(__name__)
-   app.secret_key = 'your-secret-key-change-in-production'
-
-   login_manager = LoginManager()
-   login_manager.init_app(app)
-
-   class User(UserMixin):
-       def __init__(self, id, username, email):
-           self.id = id
-           self.username = username
-           self.email = email
-
-   @login_manager.user_loader
-   def load_user(user_id):
-       conn = get_db()
-       user = conn.execute('SELECT * FROM users WHERE id = ?', (user_id,)).fetchone()
-       conn.close()
-       if user:
-           return User(user['id'], user['username'], user['email'])
-       return None
-
-   @app.route('/api/auth/login', methods=['POST'])
-   def login():
-       data = request.get_json()
-       email = data.get('email')
-       password = data.get('password')
-
-       if not email or not password:
-           return jsonify({'error': 'Email and password required'}), 400
-
-       conn = get_db()
-       user = conn.execute('SELECT * FROM users WHERE email = ?', (email,)).fetchone()
-       conn.close()
-
-       if not user or not check_password(password, user['password_hash']):
-           return jsonify({'error': 'Invalid credentials'}), 401
-
-       user_obj = User(user['id'], user['username'], user['email'])
-       login_user(user_obj)
-
-       return jsonify({
-           'success': True,
-           'message': 'Logged in successfully',
-           'user': {
-               'id': user['id'],
-               'username': user['username'],
-               'email': user['email']
-           }
-       })
    ```
 
 ### Step 7: Create Authentication Middleware
@@ -459,25 +291,6 @@ Select an authentication method based on your stack:
    })
    ```
 
-   **Python (Flask-Login decorator):**
-
-   ```python
-   # server/app.py
-   from flask_login import login_required
-
-   @app.route('/api/profile')
-   @login_required
-   def profile():
-       return jsonify({
-           'message': 'Protected route accessed',
-           'user': {
-               'id': current_user.id,
-               'username': current_user.username,
-               'email': current_user.email
-           }
-       })
-   ```
-
 ### Step 8: Implement Logout
 
 1. **Create logout endpoint:**
@@ -490,19 +303,6 @@ Select an authentication method based on your stack:
      localStorage.removeItem('token')
      window.location.href = '/login'
    }
-   ```
-
-   **Python (Flask-Login):**
-
-   ```python
-   # server/app.py
-   from flask_login import logout_user
-
-   @app.route('/api/auth/logout', methods=['POST'])
-   @login_required
-   def logout():
-       logout_user()
-       return jsonify({'success': True, 'message': 'Logged out successfully'})
    ```
 
 ### Step 9: Update Client to Use Authentication
@@ -667,7 +467,7 @@ git commit -m "Pro Assignment 1: Authentication System"
 
 ## Grading Rubric
 
-See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
+See [Grading Rubrics](https://repodin-education.github.io/vibe-coding-materials/grading-rubrics.html) for detailed criteria.
 
 **Total Points:** 10 bonus points
 
@@ -720,7 +520,7 @@ See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
 
 ## Tips for Success
 
-- **Start with JWT/Flask-Login:** Easiest to implement
+- **Start with JWT:** Easiest to implement in Node.js
 - **Use bcrypt:** Industry standard for password hashing
 - **Test thoroughly:** Test registration, login, logout, protected routes
 - **Handle errors:** Provide clear error messages
@@ -793,9 +593,8 @@ See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
 - Review authentication documentation:
   - [JWT.io](https://jwt.io/) - JWT token debugger
   - [bcrypt Documentation](https://www.npmjs.com/package/bcrypt)
-  - [Flask-Login Documentation](https://flask-login.readthedocs.io/)
-- Check [FAQ](../materials/faq.md)
-- Review [Student Guide](../materials/student-guide.md)
+- Check [FAQ](https://repodin-education.github.io/vibe-coding-materials/faq.html)
+- Review [Student Guide](https://repodin-education.github.io/vibe-coding-materials/student-guide.html)
 - Contact your teacher if needed
 
 ---
@@ -806,7 +605,6 @@ See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
 
 - [jsonwebtoken](https://www.npmjs.com/package/jsonwebtoken) - Node.js JWT library
 - [bcrypt](https://www.npmjs.com/package/bcrypt) - Password hashing
-- [Flask-Login](https://flask-login.readthedocs.io/) - Python authentication
 - [Passport.js](http://www.passportjs.org/) - Node.js authentication middleware
 
 **Learning Resources:**
@@ -822,6 +620,7 @@ See [Grading Rubrics](../materials/grading-rubrics.md) for detailed criteria.
 | Version | Date       | Author                 | Changes         |
 | ------- | ---------- | ---------------------- | --------------- |
 | 1.0     | 2025-12-25 | RepodIn Education Team | Initial version |
+| 1.1     | 2025-12-28 | RepodIn Education Team | Simplified to Node.js only |
 
 ---
 
